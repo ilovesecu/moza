@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>테스트</title>
+    <link rel="stylesheet" href="reset.css">
+    <style>
+        html,body{
+            height: 100%;
+        }
+        .wrap{
+            min-width: 800px; /*전체 사이트의 길이가 800px보다 작아지지 않도록 설정*/
+            height: 100%;
+        }
+        .header{
+            height: 100px;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            background-color: aqua;
+        }
+        .container{
+            /* height를 %로 지정하기 위해서는 부모요소로 부터 높이값을 상속받아야한다. */
+            min-height: 100%;
+            margin: 0 auto;
+            margin-top: -100px;
+            padding-top: 200px;  /* padding으로 해야 border-box를 사용하여 원하는 레이아웃을 만들 수 있다. */
+            box-sizing: border-box;
+        }
+        .content{
+            margin: 0 auto;
+            max-width: 1200px;
+            background-color: aliceblue;
+        }
+        .footer{
+            width: 100%;
+            min-height: 100px;
+            background-color: blue;
+        }
+    </style>
+</head>
+<body>
+    <!-- 모든 요소를 감싸는 요소 wrap이나 wrapper를 생성 -->
+    <div class="wrap">
+        <div class="header">header</div>
+        <div class="container">
+            <div class="content">content
+            </div>
+        </div>
+        <div class="footer">footer</div>
+    </div>
+
+</body>
+</html>
