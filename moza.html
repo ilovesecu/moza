@@ -100,6 +100,19 @@
             this.hoverCtx = this.$hoverCanvas.getContext('2d');
             
             this.eventBinding();
+            this.init();
+        }
+
+        //모드별 초기화
+        init(mode=0){
+            if(mode===0){ //드래그모드 초기화
+                window.isDrag = false;
+                window.sx=0, window.ex=0;
+                window.sy=0, window.ey=0;
+                this.hoverCtx.clearRect(0,0,this.$hoverCanvas.width, $hoverCanvas.height); //클릭용 호버 영역 지우기
+            }else if(mode===1){
+
+            }
         }
 
         eventBinding(){
@@ -107,27 +120,44 @@
             this.$modeChange.addEventListener('click',()=>{
                 window.mode = !window.mode; //모드 체인지
                 console.log('현재 모드 : ', window.mode);
-                if(window.mode === 0){ //드래그 모드
-                    window.isDrag = false;
-                    window.sx=0, window.ex=0;
-                    window.sy=0, window.ey=0;
-                    this.hoverCtx.clearRect(0,0,this.$hoverCanvas.width, $hoverCanvas.height); //클릭용 호버 영역 지우기
-                }else{ //클릭모드
+                this.init(window.mode);
+                if(window.mode === 0){ //드래그 모드 추가적으로 할일
+                    
+                }else{ //클릭모드 추가적으로 할일
 
                 }
             });
             
-            this.$hoverCanvas.addEventListener('mousedown',(e)=>this.hoverCanvasMouseDown.call(this,e))
+            this.$hoverCanvas.addEventListener('mousedown',(e)=>this.hoverCanvasMouseDown.call(this,e));
+            this.$hoverCanvas.addEventListener('mousemove',(e)=>this.hoverCanvasMouseMove.call(this,e));
         }
         
 
         //호버영역 마우스 드래그 시작 (드래그 모드)
         hoverCanvasMouseDown(e){
-            console.log(this);
-            console.log(e);
+            if(window.mode===0){ //드래그 모드인지 확인
+                window.isDrag = true;
+                window.sx = e.layerX;
+                window.sy = e.layerY;
+                this.hoverCtx.strokeRect(sx,sy,0,0);
+            }
         }
+
         //호버영역 마우스 드래그 끝 (드래그 모드)
-        //호버영역 마우스 이동 (클릭 모드)
+        hoverCanvasMouseUp(e){
+
+        }
+        
+        //호버영역 마우스 이동 (드래그모드, 클릭 모드)
+        hoverCanvasMouseMove(e){
+            if(window.mode === 0){ //드래그 모드 확인
+                if(isDrag){ //드래그 중일때만 동작
+                    this.hoverCtx.clearRect(0,0,e.target.width, e.target.height);
+                    this.hoverCtx.strokeStyle = "#FF0000"; //빨간색으로 드래그 영역 잡히게 설정
+                    this.hoverCtx.strokeRect(sx,sy, e.layerX - sx, e.layerY - sy);
+                }
+            }
+        }
 
         //이미지 불러오기
         loadImg(){
