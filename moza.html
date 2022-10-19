@@ -18,6 +18,7 @@
             position: fixed;
             top: 0; left: 0; right: 0;
             background-color: aqua;
+            z-index: 100;
         }
         .container{
             /* height를 %로 지정하기 위해서는 부모요소로 부터 높이값을 상속받아야한다. */
@@ -37,18 +38,131 @@
             min-height: 100px;
             background-color: blue;
         }
+        #canvas_area{
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            height: 600px;
+            overflow: auto;
+        }
+        #canvas_area canvas{
+            position: absolute;
+            left: 0;
+        }
     </style>
 </head>
 <body>
     <!-- 모든 요소를 감싸는 요소 wrap이나 wrapper를 생성 -->
     <div class="wrap">
-        <div class="header">header</div>
+        <div class="header">
+            <div>
+                <button>+</button>
+                <button>-</button>
+                <button id="mode_change">모드변경</button>
+                <button id="eraser">지우개</button>
+            </div>
+            <div>
+                <input type="file" id="img_loading"></button>
+            </div>
+            <div>
+                <button id="btn_upload">이미지 업로드</button>
+            </div>
+        </div>
         <div class="container">
-            <div class="content">content
+            <div class="content">
+                <div id="canvas_area">
+                    <canvas id="origin"></canvas> <!--원본-->
+                    <canvas id="mosaic"></canvas> <!--모자이크 영역-->
+                    <canvas id="hover"></canvas> <!--마우스영역-->
+                </div>
             </div>
         </div>
         <div class="footer">footer</div>
     </div>
-
 </body>
+<script>
+    class Mozaic{
+
+        constructor(){
+            window.mode = 0; //드래그 모드
+
+            this.$originCanvas = document.querySelector("#origin");
+            this.$mosaiCanvasc = document.querySelector("#mosaic");
+            this.$hoverCanvas = document.querySelector("#hover");
+
+        
+            this.$imgLoading = document.querySelector("#img_loading");
+            this.$btnUpload = document.querySelector("#btn_upload");
+            this.$modeChange = document.querySelector("#mode_change");
+            
+            this.originCtx = this.$originCanvas.getContext('2d');
+            this.mosaicCtx = this.$mosaiCanvasc.getContext('2d');
+            this.hoverCtx = this.$hoverCanvas.getContext('2d');
+            
+            this.eventBinding();
+        }
+
+        eventBinding(){
+            this.$imgLoading.addEventListener('change',this.loadImg.bind(this));
+            this.$modeChange.addEventListener('click',()=>{
+                window.mode = !window.mode; //모드 체인지
+                console.log('현재 모드 : ', window.mode);
+                if(window.mode === 0){ //드래그 모드
+                    window.isDrag = false;
+                    window.sx=0, window.ex=0;
+                    window.sy=0, window.ey=0;
+                    this.hoverCtx.clearRect(0,0,this.$hoverCanvas.width, $hoverCanvas.height); //클릭용 호버 영역 지우기
+                }else{ //클릭모드
+
+                }
+            });
+            
+            this.$hoverCanvas.addEventListener('mousedown',(e)=>this.hoverCanvasMouseDown.call(this,e))
+        }
+        
+
+        //호버영역 마우스 드래그 시작 (드래그 모드)
+        hoverCanvasMouseDown(e){
+            console.log(this);
+            console.log(e);
+        }
+        //호버영역 마우스 드래그 끝 (드래그 모드)
+        //호버영역 마우스 이동 (클릭 모드)
+
+        //이미지 불러오기
+        loadImg(){
+            const file = this.$imgLoading.files[0];
+            console.log(file);
+            if(!file.type.match(/image.*/)){
+                alert('이미지 파일이 아닙니다.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e)=>{
+                const img = new Image();
+                img.onload = ()=>{
+                    this.$originCanvas.width = img.width;
+                    this.$originCanvas.height = img.height;
+                    
+                    this.$mosaiCanvasc.width = img.width;
+                    this.$mosaiCanvasc.height = img.height;
+
+                    this.$hoverCanvas.width = img.width;
+                    this.$hoverCanvas.height = img.height;
+
+                    this.originCtx.drawImage(img,1,1);
+                    this.mosaicCtx.drawImage(img,1,1);
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+            //img.src = 'http://image.auction.co.kr/itemimage/14/7d/93/147d93ac36.jpg';
+        }
+
+    }
+    new Mozaic();
+</script>
+
+
 </html>
