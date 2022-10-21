@@ -52,7 +52,6 @@
     </style>
 </head>
 <body>
-    <!-- 모든 요소를 감싸는 요소 wrap이나 wrapper를 생성 -->
     <div class="wrap">
         <div class="header">
             <div>
@@ -102,22 +101,30 @@
             this.init();
         }
 
-        //모드별 초기화
-        init(){
+        //초기화
+        init(mode=0){
             window.isErase = false;
             window.isDrag = false;
             window.sx=0, window.ex=0;
             window.sy=0, window.ey=0;
             this.hoverCtx.clearRect(0,0,this.$hoverCanvas.width, this.$hoverCanvas.height); //그려진 호버 영역 지우기
+            if(mode===1){ //클릭모드 초기화 
+                //모자이크 영역 초기화
+                window.mozXSize = 30;
+                window.mozYSize = 30;
+            }
         }
 
         eventBinding(){
             this.$imgLoading.addEventListener('change',this.loadImg.bind(this));
+            //드래그 ↔ 클릭 모드 변경
             this.$modeChange.addEventListener('click',()=>{
-                window.mode = !window.mode; //모드 체인지
-                this.init();
+                window.mode = Number(!window.mode); //모드 체인지 (0:드래그[기본], 1:클릭)
+                this.isErase = false; //지우개 선택되었을 시 지우개 해제
+                this.init(window.mode);
                 console.log('현재 모드 : ', window.mode);
             });
+            //지우개 클릭 : 지우개 모드 활성화
             this.$eraser.addEventListener('click',()=>{
                 window.isErase = true;
             });
@@ -185,6 +192,16 @@
                     this.hoverCtx.strokeStyle = "#FF0000"; //빨간색으로 드래그 영역 잡히게 설정
                     this.hoverCtx.strokeRect(sx,sy, e.layerX - sx, e.layerY - sy);
                 }
+            }else if(window.mode === 1){ //클릭 모드
+                //좌표 가져오기
+                const x = Math.max(e.layerX,0);
+                const y = Math.max(e.layerY,0);
+                //기존 호버영역 그려진 것들 삭제
+                this.hoverCtx.clearRect(0,0,e.target.width, e.target.height);
+                this.hoverCtx.strokeStyle = 'black';
+                this.hoverCtx.strokeWidth = 30;
+                this.hoverCtx.fillStyle = 'rgba(0,255,255,0.5)';
+                this.hoverCtx.fillRect(x,y,window.mozXSize, window.mozYSize);
             }
         }
 
