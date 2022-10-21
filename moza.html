@@ -132,8 +132,13 @@
             this.$hoverCanvas.addEventListener('mousedown',(e)=>this.hoverCanvasMouseDown.call(this,e));
             this.$hoverCanvas.addEventListener('mousemove',(e)=>this.hoverCanvasMouseMove.call(this,e));
             this.$hoverCanvas.addEventListener('mouseup',(e)=>this.hoverCanvasMouseUp.call(this,e));
+            this.$hoverCanvas.addEventListener('mouseout',(e)=>this.hoverCanvasMouseOut.call(this,e));
         }
         
+        //호버영역 마우스 벗어났을 때 핸들링
+        hoverCanvasMouseOut(e){
+            
+        }
 
         //호버영역 마우스 드래그 시작 (드래그 모드)
         hoverCanvasMouseDown(e){
