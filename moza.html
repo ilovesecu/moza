@@ -90,9 +90,8 @@
             this.$mosaiCanvasc = document.querySelector("#mosaic");
             this.$hoverCanvas = document.querySelector("#hover");
 
-        
             this.$imgLoading = document.querySelector("#img_loading");
-            this.$btnUpload = document.querySelector("#btn_upload");
+            this.$eraser = document.querySelector("#eraser");
             this.$modeChange = document.querySelector("#mode_change");
             
             this.originCtx = this.$originCanvas.getContext('2d');
@@ -104,32 +103,28 @@
         }
 
         //모드별 초기화
-        init(mode=0){
-            if(mode===0){ //드래그모드 초기화
-                window.isDrag = false;
-                window.sx=0, window.ex=0;
-                window.sy=0, window.ey=0;
-                this.hoverCtx.clearRect(0,0,this.$hoverCanvas.width, $hoverCanvas.height); //클릭용 호버 영역 지우기
-            }else if(mode===1){
-
-            }
+        init(){
+            window.isErase = false;
+            window.isDrag = false;
+            window.sx=0, window.ex=0;
+            window.sy=0, window.ey=0;
+            this.hoverCtx.clearRect(0,0,this.$hoverCanvas.width, this.$hoverCanvas.height); //그려진 호버 영역 지우기
         }
 
         eventBinding(){
             this.$imgLoading.addEventListener('change',this.loadImg.bind(this));
             this.$modeChange.addEventListener('click',()=>{
                 window.mode = !window.mode; //모드 체인지
+                this.init();
                 console.log('현재 모드 : ', window.mode);
-                this.init(window.mode);
-                if(window.mode === 0){ //드래그 모드 추가적으로 할일
-                    
-                }else{ //클릭모드 추가적으로 할일
-
-                }
+            });
+            this.$eraser.addEventListener('click',()=>{
+                window.isErase = true;
             });
             
             this.$hoverCanvas.addEventListener('mousedown',(e)=>this.hoverCanvasMouseDown.call(this,e));
             this.$hoverCanvas.addEventListener('mousemove',(e)=>this.hoverCanvasMouseMove.call(this,e));
+            this.$hoverCanvas.addEventListener('mouseup',(e)=>this.hoverCanvasMouseUp.call(this,e));
         }
         
 
@@ -145,9 +140,43 @@
 
         //호버영역 마우스 드래그 끝 (드래그 모드)
         hoverCanvasMouseUp(e){
+            if(window.mode === 0){ //드래그 모드 
+                isDrag = false; //드래그끝을 알린다.
+                this.hoverCtx.clearRect(0,0,this.$hoverCanvas.width, this.$hoverCanvas.height); //표시된 드래그 영역 삭제
 
+                window.ex = e.layerX;
+                window.ey = e.layerY;
+
+                const startX = Math.min(window.sx, window.ex);
+                const startY = Math.min(window.sy, window.ey);
+                const endX = Math.max(window.sx,window.ex);
+                const endY = Math.max(window.sy,window.ey);
+
+                const imgData = this.originCtx.getImageData(startX,startY, endX - startX, endY - startY);
+                const raster = imgData.data;
+                if(window.isErase === false){
+                    for(let i=0; i<raster.length; i+=4){
+                        const r = raster[i];
+                        const g = raster[i+1];
+                        const b = raster[i+2];
+                        const a = raster[i+3];
+                        for(let j=0; j<=24; j++){
+                            raster[i+4] = r;
+                            raster[i+5] = g;
+                            raster[i+6] = b;
+                            raster[i+7] = a;
+                            i=i+4;
+                        }
+                        // raster[i] = Math.floor(Math.random() * 256);
+                        // raster[i+1] = Math.floor(Math.random() * 256);
+                        // raster[i+2] = Math.floor(Math.random() * 256);
+                        // raster[i+3] = Math.floor(Math.random() * 256);
+                    }
+                }
+                this.mosaicCtx.putImageData(imgData,startX,startY);
+            }
         }
-        
+
         //호버영역 마우스 이동 (드래그모드, 클릭 모드)
         hoverCanvasMouseMove(e){
             if(window.mode === 0){ //드래그 모드 확인
