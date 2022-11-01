@@ -55,17 +55,13 @@
     <div class="wrap">
         <div class="header">
             <div>
-                <button>+</button>
-                <button>-</button>
                 <button id="mode_change">모드변경</button>
                 <button id="eraser">지우개</button>
             </div>
             <div>
                 <input type="file" id="img_loading"></button>
             </div>
-            <div>
-                <button id="btn_upload">이미지 업로드</button>
-            </div>
+            
         </div>
         <div class="container">
             <div class="content">
@@ -110,8 +106,8 @@
             this.hoverCtx.clearRect(0,0,this.$hoverCanvas.width, this.$hoverCanvas.height); //그려진 호버 영역 지우기
             if(mode===1){ //클릭모드 초기화 
                 //모자이크 영역 초기화
-                window.mozXSize = 30;
-                window.mozYSize = 30;
+                window.mozXSize = 15;
+                window.mozYSize = 15;
             }
         }
 
@@ -133,11 +129,12 @@
             this.$hoverCanvas.addEventListener('mousemove',(e)=>this.hoverCanvasMouseMove.call(this,e));
             this.$hoverCanvas.addEventListener('mouseup',(e)=>this.hoverCanvasMouseUp.call(this,e));
             this.$hoverCanvas.addEventListener('mouseout',(e)=>this.hoverCanvasMouseOut.call(this,e));
+            this.$hoverCanvas.addEventListener('click',(e)=>this.hoverCanvasMouseClick.call(this,e));
         }
         
         //호버영역 마우스 벗어났을 때 핸들링
         hoverCanvasMouseOut(e){
-            
+
         }
 
         //호버영역 마우스 드래그 시작 (드래그 모드)
@@ -147,6 +144,17 @@
                 window.sx = e.layerX;
                 window.sy = e.layerY;
                 this.hoverCtx.strokeRect(sx,sy,0,0);
+            }
+        }
+        
+        //호버영역 마우스 클릭(클릭모드)
+        hoverCanvasMouseClick(e){
+            if(window.mode === 1){
+                //좌표가져오기
+                window.ex = Math.max(0, e.layerX);
+                window.ey = Math.max(0, e.layerY);
+                const imgData = this.originCtx.getImageData(window.ex,window.ey,window.mozXSize,window.mozYSize);
+                this.doMosaic(imgData,ex,ey);
             }
         }
 
@@ -165,28 +173,32 @@
                 const endY = Math.max(window.sy,window.ey);
 
                 const imgData = this.originCtx.getImageData(startX,startY, endX - startX, endY - startY);
-                const raster = imgData.data;
-                if(window.isErase === false){
-                    for(let i=0; i<raster.length; i+=4){
-                        const r = raster[i];
-                        const g = raster[i+1];
-                        const b = raster[i+2];
-                        const a = raster[i+3];
-                        for(let j=0; j<=24; j++){
-                            raster[i+4] = r;
-                            raster[i+5] = g;
-                            raster[i+6] = b;
-                            raster[i+7] = a;
-                            i=i+4;
-                        }
-                        // raster[i] = Math.floor(Math.random() * 256);
-                        // raster[i+1] = Math.floor(Math.random() * 256);
-                        // raster[i+2] = Math.floor(Math.random() * 256);
-                        // raster[i+3] = Math.floor(Math.random() * 256);
-                    }
-                }
-                this.mosaicCtx.putImageData(imgData,startX,startY);
+                this.doMosaic(imgData,startX,startY);
             }
+        }
+
+        doMosaic(imgData,startX,startY){
+            const raster = imgData.data;
+            if(window.isErase === false){
+                for(let i=0; i<raster.length; i+=4){
+                    const r = raster[i];
+                    const g = raster[i+1];
+                    const b = raster[i+2];
+                    const a = raster[i+3];
+                    for(let j=0; j<=24; j++){
+                        raster[i+4] = r;
+                        raster[i+5] = g;
+                        raster[i+6] = b;
+                        raster[i+7] = a;
+                        i=i+4;
+                    }
+                    // raster[i] = Math.floor(Math.random() * 256);
+                    // raster[i+1] = Math.floor(Math.random() * 256);
+                    // raster[i+2] = Math.floor(Math.random() * 256);
+                    // raster[i+3] = Math.floor(Math.random() * 256);
+                }
+            }
+            this.mosaicCtx.putImageData(imgData,startX,startY);
         }
 
         //호버영역 마우스 이동 (드래그모드, 클릭 모드)
@@ -238,7 +250,6 @@
                 img.src = e.target.result;
             }
             reader.readAsDataURL(file);
-            //img.src = 'http://image.auction.co.kr/itemimage/14/7d/93/147d93ac36.jpg';
         }
 
     }
